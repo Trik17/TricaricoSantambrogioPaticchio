@@ -1,6 +1,9 @@
 open util/integer
-open util/time
 open util/boolean
+
+sig System{
+	date: one Int
+}
 
 sig User {
 	username: one String,
@@ -11,18 +14,47 @@ enum DailyScheduleStatus{Coming, InProgress, Completed}
 
 sig DailySchedule{
 	status: one DailyScheduleStatus,
-	date: one Int,
+
 	contains: some Appointment
 }
 
 sig Appointment {
+	predecessor: lone Appointment,
+	successor: lone Appointment,
 	date: one Int,
-	time: one Time, 
-	isContained: one DailySchedule
+	startingTime: one Int,
+	finalTime: one Int,
+	isContained: one DailySchedule,
+	associatedItinerary: one Itinerary
+}
+
+{
+	predecessor != successor
+	//date = isContained.date
+	finalTime > startingTime
+}
+
+fact f{
+all a: Appointment | a.startingTime > a.predecessor.finalTime && a.finalTime<a.successor.startingTime
+all a: Appointment | a.date = a.isContained.date
+}
+
+enum ItineraryStatus{Computed, Progressing, Finished}
+
+sig Itinerary{
+	associatedAppointment: one Appointment,
+	startingTime: one Int,
+	finalTime: one Int,
+	itineraryStatus: one ItineraryStatus
 }
 
 fact ContainConstraint{
 	isContained = ~contains
+}
+
+fact itineraryConstraint{
+	associatedItinerary = ~associatedAppointment
+	all i: Itinerary, a: i.associatedAppointment | i.startingTime < a.startingTime && i.startingTime >= a.predecessor.finalTime
 }
 
 pred show{}
