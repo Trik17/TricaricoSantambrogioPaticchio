@@ -28,10 +28,7 @@ duration>=0
 
 
 fact AllInTheTree{
-// each appointment must be in a dailyschedule
-	all a:Appointment | a in DailySchedule.contains
-all a1,a2: Appointment, d1,d2: DailySchedule | (d1!=d2 && a1 in d1.contains && a2 in d2.contains)=>
-(a1!=a2 && a1 not in d2.contains && a2 not in d1.contains)
+
 // each Itinerary must be in a appointment
 	all i: Itinerary | i in Appointment.associatedItinerary
 // each Itinerary must belong with one and only one appointment 
