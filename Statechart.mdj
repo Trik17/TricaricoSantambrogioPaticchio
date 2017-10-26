@@ -234,7 +234,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "Inserted",
+											"text": "Drafted",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5,
 											"wordWrap": false
@@ -3528,7 +3528,7 @@
 							"_parent": {
 								"$ref": "AAAAAAFfKmGbfo3Nm8E="
 							},
-							"name": "Inserted",
+							"name": "Drafted",
 							"visibility": "public"
 						},
 						{

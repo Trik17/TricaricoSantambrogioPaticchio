@@ -3,7 +3,7 @@ open util/boolean
 
 sig System{//it's the application and the date is the device's one
 	time: one Time,
-	users: one User
+	users: some User
 }
 
 sig Time{ //bisogna inserire che il Time appartiene a system/daily schedule ecc.
@@ -32,14 +32,28 @@ date>0
 
 sig Appointment {
 	predecessor: lone Appointment,
-	successor: lone Appointment,  //in un daily schedule ci deve essere esattamente uno senza pred e uno senza succ
+	successor: lone Appointment,  
 	startingTime: one Time,
 	finalTime: one Time,
-// 	associatedItinerary: one Itinerary,
+ 	associatedItinerary: one Itinerary,
 //	isContained: one DailySchedule
 }{
 startingTime.date=finalTime.date
 startingTime.hour<finalTime.hour
+}
+
+abstract sig ItineraryStatus{}
+one sig Computed extends ItineraryStatus{}
+one sig Progressing extends ItineraryStatus{}
+one sig Finished extends ItineraryStatus{}
+
+sig Itinerary{
+	associatedAppointment: one Appointment,
+	startingTimeIt: one Time,
+	finalTimeIt: one Time,
+      itineraryStatus: one ItineraryStatus
+}{
+
 }
 
 fact AppointmentConstraints{
@@ -57,8 +71,15 @@ fact AppointmentConstraints{
 	all a1,a2 : Appointment | (a2 in a1.successor) => (a2.startingTime.hour>a1.finalTime.hour) 
 	//There is only one appointment in a daily schedule without a predecessor/successor
 	all d: DailySchedule | (#d.contains = (add[#d.contains.predecessor,1] ))&& ( #d.contains =( add[#d.contains.successor,1]))
-	
-	
+}
+
+fact AppointmentAndItineraryAssociated{
+	associatedItinerary = ~associatedAppointment
+	//each Itinerary of an Appointment must have the same date of it
+	all a: Appointment, i: a.associatedItinerary | a.startingTime.date=i.startingTimeIt.date
+	//each itinerary is between two consecutive appointments
+	all i: Itinerary| i.finalTimeIt.hour =< i.associatedAppointment.startingTime.hour &&
+				( i.startingTimeIt.hour >= i.associatedAppointment.predecessor.finalTime.hour) 
 }
 
 fact UserSystemTree{
@@ -68,8 +89,6 @@ fact UserSystemTree{
 all u1,u2:User, s1,s2:System | (s1!=s2 && u1 in s1.users && u2 in s2.users)=>
 (u1!=u2 && u1 not in s2.users && u2 not in s1.users)
 }
-
-
 
 fact DailyScheduleUserTree{
 // each DailySchedule must be in a user's calendar
@@ -81,13 +100,14 @@ fact DailyScheduleUserTree{
 	all u : User, d1,d2: DailySchedule | (d1!=d2 && d1 in u.calendar && d2 in u.calendar) => (d1.date != d2.date)
 }
 
-fact DailyScheduleStateChart{
-	all s: System, d: s.users.calendar | (d.date>s.time.date) <=> d.status=Coming
-	all s: System, d: s.users.calendar  | (d.date=s.time.date) <=> d.status=InProgress
-	all s: System, d: s.users.calendar  | (d.date<s.time.date) <=> d.status=Completed
-}
-fact noUselessTime{
-	all t: Time| (t in System.time) or (t in Appointment.startingTime) or (t in Appointment.finalTime) //poiITINERARY
+fact ItineraryAppointmentTree{
+all i:Itinerary | i.startingTimeIt.date=i.finalTimeIt.date
+all i:Itinerary | i.startingTimeIt.hour<i.finalTimeIt.hour
+// each Itinerary must be in a appointment
+	all i: Itinerary | i in Appointment.associatedItinerary
+// each Itinerary must belong with one and only one appointment 
+all i1,i2:Itinerary , a1,a2: Appointment | (a1!=a2 && i1 in a1.associatedItinerary && i2 in a2.associatedItinerary)=>
+(i1!=i2 && i1 not in a2.associatedItinerary && i2 not in a1.associatedItinerary)
 }
 
 fact AppointmentDailyScheduleTree{
@@ -96,6 +116,25 @@ fact AppointmentDailyScheduleTree{
 	//each appointment must be in one and only one dailyschedule
 	all a1,a2: Appointment, d1,d2: DailySchedule | (d1!=d2 && a1 in d1.contains && a2 in d2.contains)=>
 	(a1!=a2 && a1 not in d2.contains && a2 not in d1.contains)
+}
+
+fact DailyScheduleStateChart{
+	all s: System, d: s.users.calendar | (d.date>s.time.date) <=> d.status=Coming
+	all s: System, d: s.users.calendar  | (d.date=s.time.date) <=> d.status=InProgress
+	all s: System, d: s.users.calendar  | (d.date<s.time.date) <=> d.status=Completed
+}
+
+fact ItineraryStateChart{
+	all s: System, i: s.users.calendar.contains.associatedItinerary | ((i.startingTimeIt.date=s.time.date) && (i.startingTimeIt.hour =< s.time.hour) 
+				&&  (i.finalTimeIt.hour >= s.time.hour)) <=> i.itineraryStatus=Progressing
+	all s: System, i: s.users.calendar.contains.associatedItinerary | (i.startingTimeIt.date>s.time.date or
+				 (i.startingTimeIt.date=s.time.date  and i.startingTimeIt.hour > s.time.hour))<=> i.itineraryStatus=Computed
+	all s: System, i: s.users.calendar.contains.associatedItinerary | (i.startingTimeIt.date<s.time.date or
+				 (i.startingTimeIt.date=s.time.date  and i.finalTimeIt.hour < s.time.hour))<=> i.itineraryStatus=Finished
+}
+
+fact noUselessTime{
+	all t: Time| (t in System.time) or (t in Appointment.startingTime) or (t in Appointment.finalTime) //poiITINERARY
 }
 
 
@@ -110,24 +149,50 @@ assert AppointmentOrdering{
 	all a1,  a2: Appointment | (a2 in a1.successor) => a1!=a2
 }
 
-assert noOverlappingAppointments{
-//if two appointment overlap, they belongs with different users
+assert NoOverlappingAppointments{
+//if two appointment overlap, they belong with different users
 	all a1,a2: Appointment, u1,u2: User | (a1.startingTime.date=a2.startingTime.date && a1!=a2 &&  (a1 in u1.calendar.contains && a2 in u2.calendar.contains) 
 										&& (a1.startingTime.hour>=a2.startingTime.hour && a1.startingTime.hour=<a2.finalTime.hour)) 
 										=> (u1!=u2)
 }
 
-assert samePredecessorSuccessorDate{
+assert SamePredecessorSuccessorDate{
+	//predecessor & successor have the same date
 	all a1, a2: Appointment | (a2 in a1.predecessor) => (a1.startingTime.date=a2.startingTime.date)
 	all a1, a2: Appointment | (a2 in a1.successor) => (a1.startingTime.date=a2.startingTime.date)
  }
 
+assert OneFirstAndOneLastAppointment{
+	all a1,a2: Appointment, d: DailySchedule | (a1.predecessor = none && a2.predecessor = none && a1!=a2 && (a1 in d.contains))=> 
+									 		(a2 not in d.contains)
+}
 
+assert noOverlappingItineraries{
+//if two itineraries overlap, they belong with different users
+	all i1,i2: Itinerary, u1,u2: User | (i1!=i2 && i1.itineraryStatus=Progressing && i2.itineraryStatus=Progressing 
+										&& i1 in u1.calendar.contains.associatedItinerary && i2 in u2.calendar.contains.associatedItinerary) =>
+										(u1!=u2)
+}
+
+assert ScheduleItineraryRelationFinished{
+//Verify the time when itineraries are finished
+	all s: System, d: s.users.calendar , i: d.contains.associatedItinerary | ((d.status=Completed) or (d.status=InProgress && i.finalTimeIt.hour<s.time.hour)) => i.itineraryStatus=Finished
+}
+
+
+assert ScheduleItineraryRelationProgressing{
+//Verify that if the itinerary is progressing, then the daily schedule is in progress
+	all d: DailySchedule, i: d.contains.associatedItinerary | i.itineraryStatus=Progressing => d.status=InProgress
+}
 
 pred show{}
 
-check noOverlappingAppointments
-//check samePredecessorSuccessorDate
+//check ScheduleItineraryRelationProgressing for 5
+//check ScheduleItineraryRelationFinished
+//check noOverlappingItineraries
+//check OneFirstAndOneLastAppointment
+//check NoOverlappingAppointments
+//check SamePredecessorSuccessorDate
 //check AppointmentOrdering
 //check OnlyOneDSInProgress
-run show for 15 but exactly 1 System, exactly 1 User, exactly 4 DailySchedule
+run show for 8 but exactly 1 System, exactly 1 User, exactly 1 DailySchedule, exactly 3 Appointment
