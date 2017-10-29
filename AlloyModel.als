@@ -52,8 +52,6 @@ sig Itinerary{
 	startingTimeIt: one Time,
 	finalTimeIt: one Time,
       itineraryStatus: one ItineraryStatus
-}{
-
 }
 
 fact AppointmentConstraints{
@@ -132,11 +130,6 @@ fact ItineraryStateChart{
 	all s: System, i: s.users.calendar.contains.associatedItinerary | (i.startingTimeIt.date<s.time.date or
 				 (i.startingTimeIt.date=s.time.date  and i.finalTimeIt.hour < s.time.hour))<=> i.itineraryStatus=Finished
 }
-
-fact noUselessTime{
-	all t: Time| (t in System.time) or (t in Appointment.startingTime) or (t in Appointment.finalTime) //poiITINERARY
-}
-
 
 //There is only One DailyScheduleInProgress
 assert OnlyOneDSInProgress{
