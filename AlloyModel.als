@@ -1,8 +1,7 @@
 open util/integer
-//open util/integer as integer
 open util/boolean
 
-one sig System{//it's the application and the date is the device's one
+sig System{//it's the application and the date is the device's one
 	time: one Time,
 	users: some User
 }
@@ -31,19 +30,12 @@ sig DailySchedule{
 date>0
 }
 
-abstract sig AppointmentStatus{}
-one sig Drafted extends AppointmentStatus{}
-one sig Scheduled extends AppointmentStatus{}
-one sig Current extends AppointmentStatus{}
-one sig Terminated extends AppointmentStatus{}
-
 sig Appointment {
 	predecessor: lone Appointment,
 	successor: lone Appointment,  
 	startingTime: one Time,
 	finalTime: one Time,
  	associatedItinerary: one Itinerary,
-	appointmentStatus: one AppointmentStatus
 //	isContained: one DailySchedule
 }{
 startingTime.date=finalTime.date
@@ -64,7 +56,8 @@ sig Itinerary{
 
 }
 
-fact AppointmentConstraints{	
+fact AppointmentConstraints{
+	
 	predecessor=~successor
 	all a: Appointment | a.predecessor!=a
 	all a: Appointment | a.successor!=a
@@ -118,32 +111,11 @@ all i1,i2:Itinerary , a1,a2: Appointment | (a1!=a2 && i1 in a1.associatedItinera
 }
 
 fact AppointmentDailyScheduleTree{
-
-
-
-
-
-
-//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA 		all a: Appointment | #(u.calendar.contains.appointmentStatus -> Drafted)=<1 
-						
-
-
-	// each appointment must be in a dailyschedule except for, at most, one Drafted Appointment (for each User)
-	(#(Appointment.appointmentStatus -> Drafted))=<(#User)
-	all a:Appointment | ((a.appointmentStatus = Scheduled) or (a.appointmentStatus = Current) or (a.appointmentStatus = Terminated)) 
-					=> (a in DailySchedule.contains)
+	// each appointment must be in a dailyschedule
+	all a:Appointment | a in DailySchedule.contains
 	//each appointment must be in one and only one dailyschedule
 	all a1,a2: Appointment, d1,d2: DailySchedule | (d1!=d2 && a1 in d1.contains && a2 in d2.contains)=>
 	(a1!=a2 && a1 not in d2.contains && a2 not in d1.contains)
-}
-
-fact AppointmentStateChart{
-	all s: System, a: s.users.calendar.contains | ((a.startingTime.date=s.time.date) && (a.associatedItinerary.startingTimeIt.hour =< s.time.hour) 
-				&&  (a.finalTime.hour >= s.time.hour)) <=> a.appointmentStatus=Current
-	all s: System, a: s.users.calendar.contains | ((a.startingTime.date>s.time.date) or ((a.associatedItinerary.startingTimeIt.hour >= s.time.hour) 
-				&&  (a.startingTime.date=s.time.date)) )<=> a.appointmentStatus=Scheduled
-	all s: System, a: s.users.calendar.contains | ((a.startingTime.date<s.time.date) or ((a.finalTime.hour =< s.time.hour) 
-				&&  (a.startingTime.date=s.time.date)) )<=> a.appointmentStatus=Terminated
 }
 
 fact DailyScheduleStateChart{
@@ -213,43 +185,42 @@ assert ScheduleItineraryRelationProgressing{
 	all d: DailySchedule, i: d.contains.associatedItinerary | i.itineraryStatus=Progressing => d.status=InProgress
 }
 
-pred timeConsistency[s: System, a: Appointment]{
-	s.time.date>=a.startingTime.date
-	//(s.time.date=a.startingTime.date)=> (s.time.hour<a.startingTime.hour)
-	(s.time.date=a.startingTime.date)=> (s.time.hour<a.associatedItinerary.startingTimeIt.hour)
+
+
+pred isDrafted[a:Appointment]{
+	all d: DailySchedule| not (a in d.contains)
+}
+pred timeOK[a:Appointment]{
+	a.startingTime.date>=System.time.date
 }
 
-
-pred newAppointment[s: System, u,u': s.users, a:Appointment]{
-	not timeConsistency[s,a] and
-	a.appointmentStatus=Drafted and
-	a not in u.calendar.contains 
+pred addAppointment[d:DailySchedule, a:Appointment,d':DailySchedule]{
+	(isDrafted[a] or a in d'.contains)
+	timeOK[a] 
+	d.date=a.startingTime.date 	
+	d'.date=d.date	
+	d'.status=d.status
+	d'.contains=d.contains+a	
 }
 
-pred addAppointment[s: System, u,u': s.users, a:Appointment]{
-//	a.appointmentStatus=
-	u'.calendar.contains=u.calendar.contains+a	
+pred showAddAppointment[d:DailySchedule, a:Appointment,d':DailySchedule]{
+	addAppointment[d,a,d']
+	a in d'.contains
 }
 
-pred showNewAppointment[s: System, u,u': User,a:Appointment]{
-	newAppointment[s,u,u',a]
-	addAppointment[s,u,u',a]
-}
-
-
-fact show{
-	lone a:Appointment | a.appointmentStatus=Drafted
+assert checkAdd{
+	all a:Appointment, d,d': DailySchedule | isDrafted[a]=> ( addAppointment[d,a,d'] => (not isDrafted[a]))
+	all a:Appointment, d,d': DailySchedule | (a not in d'.contains)=> addAppointment[d,a,d'] => (a in d'.contains)
 }
 
 pred show{
-	
-//#System=1
-//#s.users=1
-//#(s.users.calendar)>1
-//#(s.users.calendar.contains)>1
+//#User=1
+//all u:User | u.calendar!=none
+all a:Appointment | a in DailySchedule.contains
 }
 
-/*
+
+check checkAdd
 check ScheduleItineraryRelationProgressing for 5
 check ScheduleItineraryRelationFinished
 check noOverlappingItineraries
@@ -258,7 +229,6 @@ check NoOverlappingAppointments
 check SamePredecessorSuccessorDate
 check AppointmentOrdering
 check OnlyOneDSInProgress
-*/
 
-run show for 5 but 1 User, 4 DailySchedule, 4 Appointment
-run showNewAppointment for 5  //but 1 User
+run show for 8 but exactly 1 System, exactly 1 User, exactly 1 DailySchedule, exactly 3 Appointment//, 10 Itinerary
+run showAddAppointment
