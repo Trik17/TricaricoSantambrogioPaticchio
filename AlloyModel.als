@@ -31,6 +31,11 @@ sig DailySchedule{
 date>0
 }
 
+abstract sig ItineraryStatus{}
+one sig Computed extends ItineraryStatus{}
+one sig Progressing extends ItineraryStatus{}
+one sig Finished extends ItineraryStatus{}
+
 sig Appointment {
 	predecessor: lone Appointment,
 	successor: lone Appointment,  
@@ -44,9 +49,9 @@ startingTime.hour<finalTime.hour
 }
 
 abstract sig ItineraryStatus{}
-one sig Computed extends ItineraryStatus{}
-one sig Progressing extends ItineraryStatus{}
-one sig Finished extends ItineraryStatus{}
+one sig Drafted extends ItineraryStatus{}
+one sig Scheduled extends ItineraryStatus{}
+one sig Current extends ItineraryStatus{}
 
 sig Itinerary{
 	associatedAppointment: one Appointment,
@@ -196,6 +201,8 @@ pred timeConsistency[s: System, a: Appointment]{
 pred newAppointment[s: System, u: s.users, d,d': u.calendar, a:Appointment]{
 	//preconditions
 	timeConsistency[s,a]
+//	a not in u.calendar.contains
+//	#Appointment not in DailySchedule.contains=1
 	//postconditions
 	d'.contains=d.contains+a
 	
