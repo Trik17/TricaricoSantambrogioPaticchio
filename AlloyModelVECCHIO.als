@@ -184,13 +184,7 @@ assert ScheduleItineraryRelationProgressing{
 //Verify that if the itinerary is progressing, then the daily schedule is in progress
 	all d: DailySchedule, i: d.contains.associatedItinerary | i.itineraryStatus=Progressing => d.status=InProgress
 }
-/*
-pred newAppointment[d,d': DailySchedule, a:Appointment]{
-	d'.contains=d.contains+a
-}
-pred showNewAppointment[d,d': DailySchedule, a:Appointment]{
-	newAppointment[d,d',a]
-}*/
+
 
 pred show{
 //#System=1
@@ -199,7 +193,6 @@ pred show{
 //#(s.users.calendar.contains)>1
 }
 
-//run showNewAppointment for 8  but exactly 1 System, exactly 1 User
 //check ScheduleItineraryRelationProgressing for 5
 //check ScheduleItineraryRelationFinished
 //check noOverlappingItineraries
