@@ -1,7 +1,8 @@
-open util/integer
-open util/boolean
+//open util/integer
+open util/integer as integer
+//open util/boolean
 
-sig System{//it's the application and the date is the device's one
+one sig System{//it's the application and the date is the device's one
 	time: one Time,
 	users: some User
 }
@@ -184,13 +185,24 @@ assert ScheduleItineraryRelationProgressing{
 //Verify that if the itinerary is progressing, then the daily schedule is in progress
 	all d: DailySchedule, i: d.contains.associatedItinerary | i.itineraryStatus=Progressing => d.status=InProgress
 }
-/*
-pred newAppointment[d,d': DailySchedule, a:Appointment]{
-	d'.contains=d.contains+a
+
+pred timeConsistency[s: System, a: Appointment]{
+	s.time.date>=a.startingTime.date
+	//(s.time.date=a.startingTime.date)=> (s.time.hour<a.startingTime.hour)
+	(s.time.date=a.startingTime.date)=> (s.time.hour<a.associatedItinerary.startingTimeIt.hour)
 }
-pred showNewAppointment[d,d': DailySchedule, a:Appointment]{
-	newAppointment[d,d',a]
-}*/
+
+
+pred newAppointment[s: System, u: s.users, d,d': u.calendar, a:Appointment]{
+	//preconditions
+	timeConsistency[s,a]
+	//postconditions
+	d'.contains=d.contains+a
+	
+}
+pred showNewAppointment[s: System, u: s.users, d,d': u.calendar, a:Appointment]{
+	newAppointment[s,u,d,d',a]
+}
 
 pred show{
 //#System=1
@@ -199,13 +211,16 @@ pred show{
 //#(s.users.calendar.contains)>1
 }
 
-//run showNewAppointment for 8  but exactly 1 System, exactly 1 User
-//check ScheduleItineraryRelationProgressing for 5
-//check ScheduleItineraryRelationFinished
-//check noOverlappingItineraries
-//check OneFirstAndOneLastAppointment
-//check NoOverlappingAppointments
-//check SamePredecessorSuccessorDate
-//check AppointmentOrdering
-//check OnlyOneDSInProgress
-run show for 8 but exactly 1 System, exactly 1 User, 3 DailySchedule, 10 Appointment, 10 Itinerary
+/*
+check ScheduleItineraryRelationProgressing for 5
+check ScheduleItineraryRelationFinished
+check noOverlappingItineraries
+check OneFirstAndOneLastAppointment
+check NoOverlappingAppointments
+check SamePredecessorSuccessorDate
+check AppointmentOrdering
+check OnlyOneDSInProgress
+*/
+
+run show for 5 but 1 User//, 4 DailySchedule, 4 Appointment
+run showNewAppointment for 5  but 1 User
