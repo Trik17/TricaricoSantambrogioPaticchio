@@ -111,11 +111,6 @@ all i1,i2:Itinerary , a1,a2: Appointment | (a1!=a2 && i1 in a1.associatedItinera
 }
 
 fact AppointmentDailyScheduleTree{
-/*
-	// each appointment must be in a dailyschedule
-	all a:Appointment | a in DailySchedule.contains
-//AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-*/
 	//each appointment must be in one and only one dailyschedule
 	all a1,a2: Appointment, d1,d2: DailySchedule | (d1!=d2 && a1 in d1.contains && a2 in d2.contains)=>
 	(a1!=a2 && a1 not in d2.contains && a2 not in d1.contains)
@@ -189,25 +184,39 @@ assert ScheduleItineraryRelationProgressing{
 }	
 
 pred isDrafted[a:Appointment]{
-	all d: DailySchedule| a not in d.contains
+	all d: DailySchedule| not (a in d.contains)
+}
+pred timeOK[a:Appointment]{
+	a.startingTime.date>=System.time.date
 }
 
-pred addAppointment[u:User,a:Appointment,u':User]{
-	u'.calendar.contains=u.calendar.contains+a
-}
-pred showAddAppointment[u:User,a:Appointment,u':User]{
-	addAppointment[u,a,u']
-	not isDrafted[a]
+pred addAppointment[d:DailySchedule, a:Appointment,d':DailySchedule]{
+	(isDrafted[a] or a in d'.contains)
+	timeOK[a] 
+	d.date=a.startingTime.date 	
+	d'.date=d.date	
+	d'.status=d.status
+	d'.contains=d.contains+a
+	
 }
 
+pred showAddAppointment[d:DailySchedule, a:Appointment,d':DailySchedule]{
+	addAppointment[d,a,d']
+	a in d'.contains
+}
 
+assert checkAdd{
+	all a:Appointment, d,d': DailySchedule | isDrafted[a]=> ( addAppointment[d,a,d'] => (not isDrafted[a]))
+	all a:Appointment, d,d': DailySchedule | (a not in d'.contains)=> addAppointment[d,a,d'] => (a in d'.contains)
+}
 
 
 pred show{
 all u:User | u.calendar!=none
 all a:Appointment | a in DailySchedule.contains
 }
-/*
+
+check checkAdd
 check ScheduleItineraryRelationProgressing for 5
 check ScheduleItineraryRelationFinished
 check noOverlappingItineraries
@@ -216,6 +225,6 @@ check NoOverlappingAppointments
 check SamePredecessorSuccessorDate
 check AppointmentOrdering
 check OnlyOneDSInProgress
-*/
+
 run show for 5 //but exactly 1 User, 3 DailySchedule, 10 Appointment, 10 Itinerary
-//run showAddAppointment
+run showAddAppointment
