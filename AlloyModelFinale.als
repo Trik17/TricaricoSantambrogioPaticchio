@@ -35,7 +35,8 @@ sig Appointment {
 	successor: lone Appointment,  
 	startingTime: one Time,
 	finalTime: one Time,
- 	associatedItinerary: one Itinerary
+ 	associatedItinerary: one Itinerary,
+//	isContained: one DailySchedule
 }{
 startingTime.date=finalTime.date
 startingTime.hour<finalTime.hour
@@ -51,12 +52,15 @@ sig Itinerary{
 	startingTimeIt: one Time,
 	finalTimeIt: one Time,
       itineraryStatus: one ItineraryStatus
+}{
+
 }
 
-fact AppointmentConstraints{	
+fact AppointmentConstraints{
+	
 	predecessor=~successor
-	all a1,a2: Appointment | (a2 in a1.predecessor) =>a1!=a2
-	all a1,a2: Appointment | (a2 in a1.successor)=> a1!=a2
+	all a: Appointment | a.predecessor!=a
+	all a: Appointment | a.successor!=a
 	//each appointment in a dailyshedule must have the same date of it
 	all d: DailySchedule, a: d.contains | d.date=a.startingTime.date
 	//If there is a predecessor, then it must end before its successor
@@ -74,8 +78,8 @@ fact AppointmentAndItineraryAssociated{
 	//each Itinerary of an Appointment must have the same date of it
 	all a: Appointment, i: a.associatedItinerary | a.startingTime.date=i.startingTimeIt.date
 	//each itinerary is between two consecutive appointments
-	all i: Itinerary, a1,a2:Appointment |(a2 in a1.predecessor)=> (i.finalTimeIt.hour =< i.associatedAppointment.startingTime.hour &&
-				( i.startingTimeIt.hour >= a2.finalTime.hour) )
+	all i: Itinerary| i.finalTimeIt.hour =< i.associatedAppointment.startingTime.hour &&
+				( i.startingTimeIt.hour >= i.associatedAppointment.predecessor.finalTime.hour) 
 }
 
 fact UserSystemTree{
@@ -97,13 +101,13 @@ fact DailyScheduleUserTree{
 }
 
 fact ItineraryAppointmentTree{
-	all i:Itinerary | i.startingTimeIt.date=i.finalTimeIt.date
-	all i:Itinerary | i.startingTimeIt.hour<i.finalTimeIt.hour
-	// each Itinerary must be in a appointment
+all i:Itinerary | i.startingTimeIt.date=i.finalTimeIt.date
+all i:Itinerary | i.startingTimeIt.hour<i.finalTimeIt.hour
+// each Itinerary must be in a appointment
 	all i: Itinerary | i in Appointment.associatedItinerary
-	// each Itinerary must belong with one and only one appointment 
-	all i1,i2:Itinerary , a1,a2: Appointment | (a1!=a2 && i1 in a1.associatedItinerary && i2 in a2.associatedItinerary)=>
-					(i1!=i2 && i1 not in a2.associatedItinerary && i2 not in a1.associatedItinerary)
+// each Itinerary must belong with one and only one appointment 
+all i1,i2:Itinerary , a1,a2: Appointment | (a1!=a2 && i1 in a1.associatedItinerary && i2 in a2.associatedItinerary)=>
+(i1!=i2 && i1 not in a2.associatedItinerary && i2 not in a1.associatedItinerary)
 }
 
 fact AppointmentDailyScheduleTree{
@@ -125,6 +129,10 @@ fact ItineraryStateChart{
 				 (i.startingTimeIt.date=s.time.date  and i.startingTimeIt.hour > s.time.hour))<=> i.itineraryStatus=Computed
 	all s: System, i: s.users.calendar.contains.associatedItinerary | (i.startingTimeIt.date<s.time.date or
 				 (i.startingTimeIt.date=s.time.date  and i.finalTimeIt.hour < s.time.hour))<=> i.itineraryStatus=Finished
+}
+
+fact noUselessTime{
+	all t: Time| (t in System.time) or (t in Appointment.startingTime) or (t in Appointment.finalTime) //poiITINERARY
 }
 
 
@@ -171,7 +179,7 @@ assert ScheduleItineraryRelationFinished{
 
 
 assert ScheduleItineraryRelationProgressing{
-	//Verify that if the itinerary is progressing, then the daily schedule is in progress
+//Verify that if the itinerary is progressing, then the daily schedule is in progress
 	all d: DailySchedule, i: d.contains.associatedItinerary | i.itineraryStatus=Progressing => d.status=InProgress
 }	
 
@@ -203,14 +211,10 @@ assert checkAdd{
 }
 
 
-
 pred show{
-//#User=1
-//all u:User | u.calendar!=none
+all u:User | u.calendar!=none
 all a:Appointment | a in DailySchedule.contains
 }
-
-
 
 check checkAdd
 check ScheduleItineraryRelationProgressing for 5
@@ -222,5 +226,5 @@ check SamePredecessorSuccessorDate
 check AppointmentOrdering
 check OnlyOneDSInProgress
 
-run show for 10 but exactly 1 User, exactly 1 DailySchedule, exactly 2 Appointment
+run show for 5 //but exactly 1 User, 3 DailySchedule, 10 Appointment, 10 Itinerary
 run showAddAppointment
