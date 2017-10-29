@@ -31,10 +31,11 @@ sig DailySchedule{
 date>0
 }
 
-abstract sig ItineraryStatus{}
-one sig Computed extends ItineraryStatus{}
-one sig Progressing extends ItineraryStatus{}
-one sig Finished extends ItineraryStatus{}
+abstract sig AppointmentStatus{}
+one sig Drafted extends AppointmentStatus{}
+one sig Scheduled extends AppointmentStatus{}
+one sig Current extends AppointmentStatus{}
+one sig Terminated extends AppointmentStatus{}
 
 sig Appointment {
 	predecessor: lone Appointment,
@@ -42,6 +43,7 @@ sig Appointment {
 	startingTime: one Time,
 	finalTime: one Time,
  	associatedItinerary: one Itinerary,
+	appointmentStatus: one AppointmentStatus
 //	isContained: one DailySchedule
 }{
 startingTime.date=finalTime.date
@@ -49,9 +51,9 @@ startingTime.hour<finalTime.hour
 }
 
 abstract sig ItineraryStatus{}
-one sig Drafted extends ItineraryStatus{}
-one sig Scheduled extends ItineraryStatus{}
-one sig Current extends ItineraryStatus{}
+one sig Computed extends ItineraryStatus{}
+one sig Progressing extends ItineraryStatus{}
+one sig Finished extends ItineraryStatus{}
 
 sig Itinerary{
 	associatedAppointment: one Appointment,
