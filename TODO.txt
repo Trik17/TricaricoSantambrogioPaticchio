@@ -1,2 +1,3 @@
-1. Mettere bene nel RASD che l'app va anche sul pc
-2. Modificare img generated world
+1. Modificare img generated world
+2. Levare gmaps e open weather map
+3. Mettere nel RASD che l'app va anche da browser
