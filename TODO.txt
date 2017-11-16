@@ -1,0 +1,2 @@
+1. Mettere bene nel RASD che l'app va anche sul pc
+2. Modificare img generated world
