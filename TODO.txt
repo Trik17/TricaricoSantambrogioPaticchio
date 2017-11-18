@@ -1,6 +1,7 @@
 1. Modificare img generated world
 2. Levare gmaps e open weather map
 3. Mettere nel RASD che l'app va anche da browser
+4. Fare BCE
 4. chiedere a prof come rappresentare su deplyment view i replicated databases o un database di backup || replicare anche i server?
 5. rasd 1.1
 
