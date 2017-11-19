@@ -3717,7 +3717,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "Oracle 11g",
+											"text": "MySQL",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5,
 											"wordWrap": false
@@ -5237,7 +5237,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "Oracle 11g",
+											"text": "MySQL",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5,
 											"wordWrap": false
@@ -6122,7 +6122,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "Oracle 11g",
+					"name": "MySQL",
 					"stereotype": "dbms",
 					"visibility": "public",
 					"isAbstract": false,
