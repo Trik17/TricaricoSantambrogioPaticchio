@@ -1725,7 +1725,7 @@
 									"_parent": {
 										"$ref": "AAAAAAFfz0cJhcA424A="
 									},
-									"name": "maximumdistanceForMOP",
+									"name": "maximumDistanceForMOP",
 									"length": 0,
 									"primaryKey": false,
 									"foreignKey": false,
