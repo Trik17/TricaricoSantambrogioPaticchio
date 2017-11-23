@@ -14,3 +14,8 @@ entro domenica:
 map to the design elements that you have defined in this document. <- i 30L
 5. Runtime view <- santa
 6. Implementation, integration and test plan <- santa
+
+
+-componente gui?
+-un componente per riunire le interfacce?
+-test plan , i dirver / stub per dare gli input da un modulo all al altro per i test
