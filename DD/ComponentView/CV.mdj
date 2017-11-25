@@ -19241,7 +19241,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "ComponentDiagram1",
+					"name": "ApplicationCV",
 					"visible": true,
 					"defaultDiagram": false,
 					"ownedViews": [
@@ -19883,11 +19883,11 @@
 											"containerExtending": false,
 											"left": 97,
 											"top": 207,
-											"width": 166.1181640625,
+											"width": 204.4072265625,
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "AppointManagerClientSide",
+											"text": "AppointementManagerClientSide",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5,
 											"wordWrap": false
@@ -19955,7 +19955,7 @@
 									"containerExtending": false,
 									"left": 92,
 									"top": 200,
-									"width": 176.1181640625,
+									"width": 214.4072265625,
 									"height": 25,
 									"autoResize": false,
 									"stereotypeLabel": {
@@ -20079,7 +20079,7 @@
 							"containerExtending": false,
 							"left": 72,
 							"top": 200,
-							"width": 196.1181640625,
+							"width": 234.4072265625,
 							"height": 45,
 							"autoResize": false,
 							"stereotypeDisplay": "label",
@@ -21179,7 +21179,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "AppointManagerClientSide",
+					"name": "AppointementManagerClientSide",
 					"ownedElements": [
 						{
 							"_type": "UMLInterfaceRealization",
