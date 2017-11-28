@@ -5,7 +5,7 @@
 4. chiedere a prof come rappresentare su deplyment view i replicated databases o un database di backup || replicare anche i server?
 5. rasd 1.1
 6. nel rasd sistemare i sequence
-
+7. aggiungere app offline
 
 
 entro domenica:
