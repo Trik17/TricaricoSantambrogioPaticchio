@@ -16,3 +16,5 @@ entro domenica:
 -test plan , i dirver / stub per dare gli input da un modulo all al altro per i test
 -app offline che bufferizza  le azioni dell'utente e poi le fa al collegamento
 -logica su client non specificata
+
+RIMETTERE PER BENE I COMPONENT DOPO ER
