@@ -1,16 +1,9 @@
-1. Modificare img generated world
-2. Levare gmaps e open weather map
-3. Mettere nel RASD che l'app va anche da browser
-4. Fare BCE
-4. chiedere a prof come rappresentare su deplyment view i replicated databases o un database di backup || replicare anche i server?
-5. rasd 1.1
+1. Modificare img generated world OK
+2. Levare gmaps e open weather map (NO SANTA)
+3. Mettere nel RASD che l'app va anche da browser OK
+4. Fare BCE OK
 6. nel rasd sistemare i sequence
 7. aggiungere app offline
-
-
-entro domenica:
-5. Runtime view <- santa
-6. Implementation, integration and test plan <- santa
 
 
 -test plan , i dirver / stub per dare gli input da un modulo all al altro per i test
