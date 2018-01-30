@@ -7903,7 +7903,7 @@
 											"containerExtending": false,
 											"left": 96,
 											"top": -112,
-											"width": 40,
+											"width": 40.22509765625,
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
@@ -19887,7 +19887,7 @@
 											"height": 13,
 											"autoResize": false,
 											"underline": false,
-											"text": "AppointementManagerClientSide",
+											"text": "AppointmentManagerClientSide",
 											"horizontalAlignment": 2,
 											"verticalAlignment": 5,
 											"wordWrap": false
@@ -21179,7 +21179,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "AppointementManagerClientSide",
+					"name": "AppointmentManagerClientSide",
 					"ownedElements": [
 						{
 							"_type": "UMLInterfaceRealization",
